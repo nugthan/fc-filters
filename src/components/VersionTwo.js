@@ -4,6 +4,7 @@ import {CalendarDaysIcon, MagnifyingGlassIcon} from "@heroicons/react/20/solid";
 import DatePicker from "react-datepicker";
 import { Popover, Transition } from '@headlessui/react'
 import { usePopper } from 'react-popper'
+import {CloseIcon} from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
 
 export default function VersionTwo() {
     const [originalData, setOriginalData] = useState([
@@ -35,7 +36,7 @@ export default function VersionTwo() {
         0: {
             category: 'Title',
             operator: 'Is equal',
-            value: ''
+            value: 'Custom value'
         }
     })
 
@@ -90,10 +91,68 @@ export default function VersionTwo() {
     } = useTable({ columns, data }, useGlobalFilter, useSortBy, usePagination);
     const { globalFilter } = state;
 
+    const addFilter = () => {
+        const newCustomFilters = {...customFilters}
+        newCustomFilters[Object.keys(customFilters).length] = {
+            category: 'Title',
+            operator: 'Is equal',
+            value: 'Custom value'
+        }
+        setCustomFilters(newCustomFilters)
+    }
+
     return (
         <div>
             <div className={'flex items-center'}>
-                <div>
+                <div className={'flex items-center'}>
+                    {Object.keys(customFilters).map((filterID, index) => (
+                        <Popover>
+                            {({ open, close }) => (
+                                /* Use the `open` state to conditionally change the direction of the chevron icon. */
+                                <div className={'relative'}>
+                                    <Transition
+                                        enter="transition duration-100 ease-out"
+                                        enterFrom="transform scale-95 opacity-0"
+                                        enterTo="transform scale-100 opacity-100"
+                                        leave="transition duration-75 ease-out"
+                                        leaveFrom="transform scale-100 opacity-100"
+                                        leaveTo="transform scale-95 opacity-0"
+                                    >
+                                        <Popover.Panel
+                                            className={'absolute z-10 bg-white rounded-md shadow-xl flex flex-col bottom-[10px] w-[300px] h-[250px]'}
+                                        >
+                                            <div className={'grid grid-cols-2'}>
+                                                <div className={'overflow-y-scroll p-2 border-r border-r-[#E7E7E7]'}>
+                                                    <p className={'bg-[#E7E7E7] font-semibold px-2 py-1'}>CATEGORY</p>
+                                                    <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Title</p>
+                                                    <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Tags</p>
+                                                    <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Price</p>
+                                                </div>
+                                                <div className={'w-full p-2'}>
+                                                    <input
+                                                        className="h-[30px] rounded block border-0 w-full px-2 text-faded text-[13px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-white"
+                                                        value={customFilters[filterID].value}></input>
+                                                </div>
+                                            </div>
+                                            <div className={'mt-2 border-t pt-2 flex justify-end pb-2'}>
+                                                <div className={'px-2'}>
+                                                    <button className={'bg-[#E9E9E9] h-[30px] text-black rounded px-3 text-[12px] font-semibold mr-2'} onClick={() => close()}>Cancel</button>
+                                                    <button onClick={() => addFilter()} className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
+                                                </div>
+                                            </div>
+                                        </Popover.Panel>
+                                    </Transition>
+                                    <Popover.Button className={'bg-[#E9E9E9] hover:bg-[#DCDCDC] transition h-[30px] rounded px-3 text-[12px] font-semibold mr-2'}>
+                                        <div className={'flex items-center h-full py-2 text-[#4C4C4C]'}>
+                                            {customFilters[filterID].category}: <span className={'w-[60px] truncate text-left ml-1'}>{customFilters[filterID].value}</span>
+                                            <span className={'mx-2 h-full border border-gray-400'}></span>
+                                            <CloseIcon className={'text-gray-400 w-4 h-4 hover:bg-gray-700'} />
+                                        </div>
+                                    </Popover.Button>
+                                </div>
+                            )}
+                        </Popover>
+                    ))}
                     <Popover>
                         {({ open, close }) => (
                             /* Use the `open` state to conditionally change the direction of the chevron icon. */
@@ -120,7 +179,7 @@ export default function VersionTwo() {
                                         <div className={'mt-2 border-t pt-2 flex justify-end pb-2'}>
                                             <div className={'px-2'}>
                                                 <button className={'bg-[#E9E9E9] h-[30px] text-black rounded px-3 text-[12px] font-semibold mr-2'} onClick={() => close()}>Cancel</button>
-                                                <button className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
+                                                <button onClick={() => addFilter()} className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
                                             </div>
                                         </div>
                                     </Popover.Panel>
@@ -129,7 +188,6 @@ export default function VersionTwo() {
                             </div>
                         )}
                     </Popover>
-                    {/*<button className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Add Filter</button>*/}
                 </div>
                 <div className={'flex-1 flex items-center justify-end'}>
                     <div className={''}>

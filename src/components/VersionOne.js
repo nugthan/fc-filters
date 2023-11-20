@@ -31,7 +31,7 @@ export default function VersionOne () {
         0: {
             category: 'Title',
             operator: 'Is equal',
-            value: 'Product 1'
+            value: ''
         }
     })
     const [advanced, setAdvanced] = useState(false)

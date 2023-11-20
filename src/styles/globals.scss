@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.react-datepicker__input-container {
+  input {
+    @apply ring-1 text-[13px] ring-inset ring-gray-300 rounded h-[30px];
+  }
+  path {
+    @apply fill-[#00A3FF]
+  }
+}
+
+html {
+  font-size: 13px;
+}
+table tr {
+  // alternate row color
+    &:nth-child(odd) {
+        background-color: #F2F2F2;
+    }
+}

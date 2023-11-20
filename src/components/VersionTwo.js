@@ -101,6 +101,12 @@ export default function VersionTwo() {
         setCustomFilters(newCustomFilters)
     }
 
+    const removeFilter = (id) => {
+        const newCustomFilters = {...customFilters}
+        delete newCustomFilters[id]
+        setCustomFilters(newCustomFilters)
+    }
+
     return (
         <div>
             <div className={'flex items-center'}>
@@ -121,7 +127,7 @@ export default function VersionTwo() {
                                         <Popover.Panel
                                             className={'absolute z-10 bg-white rounded-md shadow-xl flex flex-col bottom-[10px] w-[300px] h-[250px]'}
                                         >
-                                            <div className={'grid grid-cols-2'}>
+                                            <div className={'grid grid-cols-2 h-full'}>
                                                 <div className={'overflow-y-scroll p-2 border-r border-r-[#E7E7E7]'}>
                                                     <p className={'bg-[#E7E7E7] font-semibold px-2 py-1'}>CATEGORY</p>
                                                     <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Title</p>
@@ -137,7 +143,7 @@ export default function VersionTwo() {
                                             <div className={'mt-2 border-t pt-2 flex justify-end pb-2'}>
                                                 <div className={'px-2'}>
                                                     <button className={'bg-[#E9E9E9] h-[30px] text-black rounded px-3 text-[12px] font-semibold mr-2'} onClick={() => close()}>Cancel</button>
-                                                    <button onClick={() => addFilter()} className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
+                                                    <button className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
                                                 </div>
                                             </div>
                                         </Popover.Panel>
@@ -146,7 +152,9 @@ export default function VersionTwo() {
                                         <div className={'flex items-center h-full py-2 text-[#4C4C4C]'}>
                                             {customFilters[filterID].category}: <span className={'w-[60px] truncate text-left ml-1'}>{customFilters[filterID].value}</span>
                                             <span className={'mx-2 h-full border border-gray-400'}></span>
-                                            <CloseIcon className={'text-gray-400 w-4 h-4 hover:bg-gray-700'} />
+                                            <div onClick={() => removeFilter(filterID)}>
+                                                <CloseIcon className={'text-gray-400 w-4 h-4 hover:bg-gray-700'} />
+                                            </div>
                                         </div>
                                     </Popover.Button>
                                 </div>
@@ -179,7 +187,7 @@ export default function VersionTwo() {
                                         <div className={'mt-2 border-t pt-2 flex justify-end pb-2'}>
                                             <div className={'px-2'}>
                                                 <button className={'bg-[#E9E9E9] h-[30px] text-black rounded px-3 text-[12px] font-semibold mr-2'} onClick={() => close()}>Cancel</button>
-                                                <button onClick={() => addFilter()} className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
+                                                <button onClick={() => {addFilter(), close()}} className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
                                             </div>
                                         </div>
                                     </Popover.Panel>

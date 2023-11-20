@@ -192,7 +192,7 @@ export default function VersionTwo() {
                                         </div>
                                     </Popover.Panel>
                                 </Transition>
-                                <Popover.Button className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Add Filter</Popover.Button>
+                                <Popover.Button className={'bg-[#56C08A] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Add Filter</Popover.Button>
                             </div>
                         )}
                     </Popover>

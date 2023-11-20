@@ -18,7 +18,7 @@ export default function Home() {
       <div className={'container mx-auto mt-24'}>
           <p className={'text-4xl mb-6'}>Version 1</p>
           <VersionOne />
-          <p className={'text-4xl mb-6 mt-24'}>Version 2</p>
+          <p className={'text-4xl mb-6 mt-64'}>Version 2</p>
           <VersionTwo />
       </div>
 

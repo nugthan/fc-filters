@@ -187,7 +187,7 @@ export default function VersionTwo() {
                                         <div className={'mt-2 border-t pt-2 flex justify-end pb-2'}>
                                             <div className={'px-2'}>
                                                 <button className={'bg-[#E9E9E9] h-[30px] text-black rounded px-3 text-[12px] font-semibold mr-2'} onClick={() => close()}>Cancel</button>
-                                                <button onClick={() => {addFilter(), close()}} className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
+                                                <button onClick={() => {addFilter(), close()}} className={'bg-[#56C08A] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Create</button>
                                             </div>
                                         </div>
                                     </Popover.Panel>

@@ -194,7 +194,7 @@ export default function VersionOne () {
                                 </div>
                                 <input
                                     value={globalFilter || ''}
-                                    className="h-[30px] w-[400px] rounded block border-0 pl-10 text-faded text-[13px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-white"
+                                    className="h-[30px] w-[400px] rounded block border-0 pl-8 text-faded text-[13px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-white"
                                     placeholder=""
                                     onChange={(e) => setGlobalFilter(e.target.value)}
                                 />

@@ -105,6 +105,16 @@ export default function VersionOne () {
                         }
                     }
                     if (filter.category === 'Price') {
+                        if (filter.operator === 'Is equal') {
+                            if (item.price !== parseInt(filter.value)) {
+                                result = false
+                            }
+                        }
+                        if (filter.operator === 'Is not equal') {
+                            if (item.price === parseInt(filter.value)) {
+                                result = false
+                            }
+                        }
                         if (filter.operator === 'Is larger than') {
                             if (item.price <= filter.value) {
                                 result = false

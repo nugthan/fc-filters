@@ -1,10 +1,11 @@
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useGlobalFilter, usePagination, useSortBy, useTable} from "react-table";
 import {CalendarDaysIcon, MagnifyingGlassIcon} from "@heroicons/react/20/solid";
 import DatePicker from "react-datepicker";
-import { Popover, Transition } from '@headlessui/react'
+import { Popover, Transition, RadioGroup } from '@headlessui/react'
 import { usePopper } from 'react-popper'
 import {CloseIcon} from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
+import classNames from "classnames";
 
 export default function VersionTwo() {
     const [originalData, setOriginalData] = useState([
@@ -39,6 +40,14 @@ export default function VersionTwo() {
             value: 'Custom value'
         }
     })
+
+    const [selectedFilter, setSelectedFilter] = useState(null)
+
+    const fakeFilter = {
+        category: 'Title',
+        operator: 'Is equal',
+        value: ''
+    }
 
     // popover
     let [referenceElement, setReferenceElement] = useState()
@@ -91,21 +100,107 @@ export default function VersionTwo() {
     } = useTable({ columns, data }, useGlobalFilter, useSortBy, usePagination);
     const { globalFilter } = state;
 
-    const addFilter = () => {
-        const newCustomFilters = {...customFilters}
-        newCustomFilters[Object.keys(customFilters).length] = {
-            category: 'Title',
-            operator: 'Is equal',
-            value: 'Custom value'
-        }
-        setCustomFilters(newCustomFilters)
-    }
-
     const removeFilter = (id) => {
         const newCustomFilters = {...customFilters}
         delete newCustomFilters[id]
         setCustomFilters(newCustomFilters)
     }
+
+    const selectFilter = (filter) => {
+        setSelectedFilter(filter)
+    }
+
+    const createFilter = () => {
+        // move selected filter to custom filters
+        const newCustomFilters = {...customFilters}
+        newCustomFilters[Object.keys(customFilters).length] = selectedFilter
+        setCustomFilters(newCustomFilters)
+    }
+
+    const saveFilter = (id) => {
+        const newCustomFilters = {...customFilters}
+        newCustomFilters[id] = selectedFilter
+        setCustomFilters(newCustomFilters)
+
+    }
+
+    const setSelectedCategory = (value) => {
+        const newFilter = {...selectedFilter}
+        newFilter.category = value
+        setSelectedFilter(newFilter)
+    }
+
+    const filter = () => {
+        if (customFilters.length === 0) {
+            setData(originalData)
+            console.log('set original data')
+        }
+        if (customFilters) {
+            const newFilteredData = originalData.filter((item) => {
+                let result = true
+                Object.keys(customFilters).forEach((filterID) => {
+                    const filter = customFilters[filterID]
+                    if (filter.category === 'Title') {
+                        if (filter.operator === 'Is equal') {
+                            // if title contains but not exact
+                            if (!item.title.toLowerCase().includes(filter.value.toLowerCase())) {
+                                result = false
+                            }
+                        }
+                        if (filter.operator === 'Is not equal') {
+                            // if title does not contain but not exact
+                            if (item.title.toLowerCase().includes(filter.value.toLowerCase())) {
+                                result = false
+                            }
+                        }
+                    }
+                    if (filter.category === 'Tags') {
+                        if (filter.operator === 'Is equal') {
+                            if (!item.tags.includes(filter.value.toLowerCase())) {
+                                result = false
+                            }
+                        }
+                        if (filter.operator === 'Is not equal') {
+                            if (item.tags.includes(filter.value.toLowerCase())) {
+                                result = false
+                            }
+                        }
+                    }
+                    if (filter.category === 'Price') {
+                        if (filter.operator === 'Is equal') {
+                            if (item.price !== parseInt(filter.value)) {
+                                result = false
+                            }
+                        }
+                        if (filter.operator === 'Is not equal') {
+                            if (item.price === parseInt(filter.value)) {
+                                result = false
+                            }
+                        }
+
+                        if (filter.operator === 'Is larger than') {
+                            if (item.price <= parseInt(filter.value)) {
+                                result = false
+                            }
+                        }
+                        if (filter.operator === 'Is smaller than') {
+                            if (item.price >= parseInt(filter.value)) {
+                                result = false
+                            }
+                        }
+                    }
+                })
+                return result
+            })
+            setData(newFilteredData)
+            console.log(newFilteredData)
+        }
+    }
+
+    useEffect(() => {
+        // clear filters if advanced is false
+        filter()
+    }, [customFilters]);
 
     return (
         <div>
@@ -127,30 +222,80 @@ export default function VersionTwo() {
                                         <Popover.Panel
                                             className={'absolute z-10 bg-white rounded-md shadow-xl flex flex-col bottom-[10px] w-[300px] h-[250px]'}
                                         >
-                                            <div className={'grid grid-cols-2 h-full'}>
+                                            <div className={'grid grid-cols-2 h-[200px]'}>
                                                 <div className={'overflow-y-scroll p-2 border-r border-r-[#E7E7E7]'}>
-                                                    <p className={'bg-[#E7E7E7] font-semibold px-2 py-1'}>CATEGORY</p>
-                                                    <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Title</p>
-                                                    <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Tags</p>
-                                                    <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Price</p>
+                                                    {selectedFilter &&
+                                                        <RadioGroup value={selectedFilter.category} className={'w-full'} onChange={setSelectedCategory}>
+                                                            <p className={'bg-[#f2f2f2] font-semibold px-2 py-1'}>CATEGORY</p>
+                                                            <RadioGroup.Option value="Title">
+                                                                {({ checked }) => (
+                                                                    <span className={classNames(checked ? 'bg-[#E7E7E7] hover:bg-[#e7e7e7]' : '', 'hover:bg-[#f2f2f2] cursor-pointer px-2 py-1 w-full flex flex-1')}>Title</span>
+                                                                )}
+                                                            </RadioGroup.Option>
+                                                            <RadioGroup.Option value="Tags">
+                                                                {({ checked }) => (
+                                                                    <span className={classNames(checked ? 'bg-[#E7E7E7] hover:bg-[#e7e7e7]' : '', 'hover:bg-[#f2f2f2] cursor-pointer px-2 py-1 w-full flex flex-1')}>Tags</span>
+                                                                )}
+                                                            </RadioGroup.Option>
+                                                            <RadioGroup.Option value="Price">
+                                                                {({ checked }) => (
+                                                                    <span className={classNames(checked ? 'bg-[#E7E7E7] hover:bg-[#e7e7e7]' : '', 'hover:bg-[#f2f2f2] cursor-pointer px-2 py-1 w-full flex flex-1')}>Price</span>
+                                                                )}
+                                                            </RadioGroup.Option>
+                                                        </RadioGroup>
+                                                    }
                                                 </div>
                                                 <div className={'w-full p-2'}>
-                                                    <input
-                                                        className="h-[30px] rounded block border-0 w-full px-2 text-faded text-[13px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-white"
-                                                        value={customFilters[filterID].value}></input>
+                                                    {selectedFilter &&
+                                                        <div>
+                                                            <p>Operator</p>
+                                                            <select
+                                                                className={'relative w-full mb-4 rounded appearance-none bg-white h-[30px] border px-3 mr-2 text-[14px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400'}
+                                                                value={selectedFilter.operator}
+                                                                onChange={(e) => {
+                                                                    const newFilter = {...selectedFilter}
+                                                                    newFilter.operator = e.target.value
+                                                                    setSelectedFilter(newFilter)
+                                                                }}
+                                                            >
+                                                                {['Is equal', 'Is not equal', 'Is larger than', 'Is smaller than'].map(pageSize => (
+                                                                    <option key={pageSize} value={pageSize}>
+                                                                        {pageSize}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <p>Value</p>
+                                                             <input
+                                                                 className="h-[30px] rounded block border-0 w-full px-2 text-faded text-[13px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-white"
+                                                                 value={selectedFilter.value}
+                                                                 onChange={(e) => {
+                                                                     const newFilter = {...selectedFilter}
+                                                                        newFilter.value = e.target.value
+                                                                        setSelectedFilter(newFilter)
+                                                                 }}
+                                                             >
+
+                                                             </input>
+                                                        </div>
+                                                    }
                                                 </div>
                                             </div>
                                             <div className={'mt-2 border-t pt-2 flex justify-end pb-2'}>
                                                 <div className={'px-2'}>
                                                     <button className={'bg-[#E9E9E9] h-[30px] text-black rounded px-3 text-[12px] font-semibold mr-2'} onClick={() => close()}>Cancel</button>
-                                                    <button className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Apply</button>
+                                                    <button className={'bg-[#00A3FF] h-[30px] text-white rounded px-3 text-[12px] font-semibold'} onClick={() => {saveFilter(filterID), close()}}>Apply</button>
                                                 </div>
                                             </div>
                                         </Popover.Panel>
                                     </Transition>
-                                    <Popover.Button className={'bg-[#E9E9E9] hover:bg-[#DCDCDC] transition h-[30px] rounded px-3 text-[12px] font-semibold mr-2'}>
+                                    <Popover.Button onClick={() => selectFilter(customFilters[filterID])} className={'bg-[#E9E9E9] hover:bg-[#DCDCDC] transition h-[30px] rounded px-3 text-[12px] font-semibold mr-2'}>
                                         <div className={'flex items-center h-full py-2 text-[#4C4C4C]'}>
-                                            {customFilters[filterID].category}: <span className={'w-[60px] truncate text-left ml-1'}>{customFilters[filterID].value}</span>
+                                            {customFilters[filterID].category}
+                                            {customFilters[filterID].operator === 'Is equal' && ' ='}
+                                            {customFilters[filterID].operator === 'Is not equal' && ' ≠'}
+                                            {customFilters[filterID].operator === 'Is larger than' && ' >'}
+                                            {customFilters[filterID].operator === 'Is smaller than' && ' <'}
+                                            <span className={'w-[60px] truncate text-left ml-1'}>{customFilters[filterID].value}</span>
                                             <span className={'mx-2 h-full border border-gray-400'}></span>
                                             <div onClick={() => removeFilter(filterID)}>
                                                 <CloseIcon className={'text-gray-400 w-4 h-4 hover:bg-gray-700'} />
@@ -176,23 +321,73 @@ export default function VersionTwo() {
                                     <Popover.Panel
                                         className={'absolute z-10 bg-white rounded-md shadow-xl flex flex-col bottom-[10px] w-[300px] h-[250px]'}
                                     >
-                                        <div className={'grid grid-cols-2 h-[100%] overflow-y-scroll'}>
-                                            <div className={'overflow-y-scroll p-2'}>
-                                                <p className={'bg-[#E7E7E7] font-semibold px-2 py-1'}>CATEGORY</p>
-                                                <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Title</p>
-                                                <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Tags</p>
-                                                <p className={'hover:bg-[#f2f2f2] py-2 px-2'}>Price</p>
+                                        <div className={'grid grid-cols-2 h-[200px]'}>
+                                            <div className={'overflow-y-scroll p-2 border-r border-r-[#E7E7E7]'}>
+                                                {selectedFilter &&
+                                                    <RadioGroup value={selectedFilter.category} className={'w-full'} onChange={setSelectedCategory}>
+                                                        <p className={'bg-[#f2f2f2] font-semibold px-2 py-1'}>CATEGORY</p>
+                                                        <RadioGroup.Option value="Title">
+                                                            {({ checked }) => (
+                                                                <span className={classNames(checked ? 'bg-[#E7E7E7] hover:bg-[#e7e7e7]' : '', 'hover:bg-[#f2f2f2] cursor-pointer px-2 py-1 w-full flex flex-1')}>Title</span>
+                                                            )}
+                                                        </RadioGroup.Option>
+                                                        <RadioGroup.Option value="Tags">
+                                                            {({ checked }) => (
+                                                                <span className={classNames(checked ? 'bg-[#E7E7E7] hover:bg-[#e7e7e7]' : '', 'hover:bg-[#f2f2f2] cursor-pointer px-2 py-1 w-full flex flex-1')}>Tags</span>
+                                                            )}
+                                                        </RadioGroup.Option>
+                                                        <RadioGroup.Option value="Price">
+                                                            {({ checked }) => (
+                                                                <span className={classNames(checked ? 'bg-[#E7E7E7] hover:bg-[#e7e7e7]' : '', 'hover:bg-[#f2f2f2] cursor-pointer px-2 py-1 w-full flex flex-1')}>Price</span>
+                                                            )}
+                                                        </RadioGroup.Option>
+                                                    </RadioGroup>
+                                                }
+                                            </div>
+                                            <div className={'w-full p-2'}>
+                                                {selectedFilter &&
+                                                    <div>
+                                                        <p>Operator</p>
+                                                        <select
+                                                            className={'relative w-full mb-4 rounded appearance-none bg-white h-[30px] border px-3 mr-2 text-[14px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400'}
+                                                            value={selectedFilter.operator}
+                                                            onChange={(e) => {
+                                                                const newFilter = {...selectedFilter}
+                                                                newFilter.operator = e.target.value
+                                                                setSelectedFilter(newFilter)
+                                                            }}
+                                                        >
+                                                            {['Is equal', 'Is not equal', 'Is larger than', 'Is smaller than'].map(pageSize => (
+                                                                <option key={pageSize} value={pageSize}>
+                                                                    {pageSize}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <p>Value</p>
+                                                        <input
+                                                            className="h-[30px] rounded block border-0 w-full px-2 text-faded text-[13px] ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-white"
+                                                            value={selectedFilter.value}
+                                                            onChange={(e) => {
+                                                                const newFilter = {...selectedFilter}
+                                                                newFilter.value = e.target.value
+                                                                setSelectedFilter(newFilter)
+                                                            }}
+                                                        >
+
+                                                        </input>
+                                                    </div>
+                                                }
                                             </div>
                                         </div>
                                         <div className={'mt-2 border-t pt-2 flex justify-end pb-2'}>
                                             <div className={'px-2'}>
                                                 <button className={'bg-[#E9E9E9] h-[30px] text-black rounded px-3 text-[12px] font-semibold mr-2'} onClick={() => close()}>Cancel</button>
-                                                <button onClick={() => {addFilter(), close()}} className={'bg-[#56C08A] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Create</button>
+                                                <button onClick={() => {createFilter(), close()}} className={'bg-[#56C08A] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Create</button>
                                             </div>
                                         </div>
                                     </Popover.Panel>
                                 </Transition>
-                                <Popover.Button className={'bg-[#56C08A] h-[30px] text-white rounded px-3 text-[12px] font-semibold'}>Add Filter</Popover.Button>
+                                <Popover.Button className={'bg-[#56C08A] h-[30px] text-white rounded px-3 text-[12px] font-semibold'} onClick={() => setSelectedFilter(fakeFilter)}>Add Filter</Popover.Button>
                             </div>
                         )}
                     </Popover>
